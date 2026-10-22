@@ -1,4 +1,4 @@
-name: Build AFUMA Water App (APK & AAB)
+name: Build AFUMA Water App (Signed AAB, APK & PEM Key)
 
 on:
   push:
@@ -229,8 +229,7 @@ jobs:
             "version": "1.0.0",
             "dependencies": {
               "@capacitor/android": "^5.0.0",
-              "@capacitor/core": "^5.0.0",
-              "@capacitor/geolocation": "^5.0.0"
+              "@capacitor/core": "^5.0.0"
             },
             "devDependencies": {
               "@capacitor/cli": "^5.0.0"
@@ -243,12 +242,7 @@ jobs:
             "appId": "com.afumawater.orderapp",
             "appName": "AFUMA Water",
             "webDir": "www",
-            "bundledWebRuntime": false,
-            "plugins": {
-              "CapacitorCookies": {
-                "enabled": true
-              }
-            }
+            "bundledWebRuntime": false
           }
           EOF
 
@@ -265,16 +259,29 @@ jobs:
           sed -i '/<\/manifest>/i \    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" \/>' $MANIFEST_PATH
           sed -i '/<\/manifest>/i \    <uses-feature android:name="android.hardware.location.gps" \/>' $MANIFEST_PATH
 
+      - name: Generate KeyStore and PEM Certificate (App Key)
+        run: |
+          keytool -genkeypair -v -keystore afuma_key.jks -alias afuma -keyalg RSA -keysize 2048 -validity 10000 -storepass afumapass123 -keypass afumapass123 -dname "CN=AFUMA, OU=Water, O=AfumaWater, L=Karachi, S=Sindh, C=PK"
+          keytool -exportcert -rfc -keystore afuma_key.jks -alias afuma -storepass afumapass123 -file afuma_cert.pem
+          mkdir -p keys_output
+          cp afuma_key.jks keys_output/
+          cp afuma_cert.pem keys_output/
+
+      - name: Sign Release AAB File
+        run: |
+          jarsigner -keystore afuma_key.jks -storepass afumapass123 -keypass afumapass123 android/app/build/outputs/bundle/release/app-release.aab afuma
+
       - name: Build Debug APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Build Release AAB (Play Console)
-        run: |
-          cd android
-          ./gradlew bundleRelease
+      - name: Upload Signed AAB Artifact (For Play Console)
+        uses: actions/upload-artifact@v4
+        with:
+          name: AFUMA-Water-AAB
+          path: android/app/build/outputs/bundle/release/app-release.aab
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -282,8 +289,8 @@ jobs:
           name: AFUMA-Water-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload AAB Artifact
+      - name: Upload PEM & Keystore Key Files
         uses: actions/upload-artifact@v4
         with:
-          name: AFUMA-Water-AAB
-          path: android/app/build/outputs/bundle/release/app-release.aab
+          name: AFUMA-Water-PEM-KEY
+          path: keys_output/
