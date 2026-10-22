@@ -26,6 +26,11 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Install ImageMagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
       - name: Create Web Project Structure & Files
         run: |
           mkdir -p www
@@ -259,28 +264,19 @@ jobs:
           npx cap add android
           npx cap copy android
 
-      - name: Download & Set App Icon for Android
+      - name: Download & Resize App Icon for Android
         run: |
           curl -sL "https://i.ibb.co/wN2jHCF1/85c170a0-43a4-4e18-ba88-c6c39cdf8e3c-1-all-2044.jpg" -o app_icon.jpg
-          python3 -c "
-          from PIL import Image
-          im = Image.open('app_icon.jpg')
-          sizes = [
-            ('res/mipmap-mdpi', (48, 48)),
-            ('res/mipmap-hdpi', (72, 72)),
-            ('res/mipmap-xhdpi', (96, 96)),
-            ('res/mipmap-xxhdpi', (144, 144)),
-            ('res/mipmap-xxxhdpi', (192, 192))
-          ]
-          for path, size in sizes:
-              import os
-              full_path = 'android/app/src/main/' + path
-              os.makedirs(full_path, exist_ok=True)
-              resized = im.resize(size)
-              resized.save(full_path + '/ic_launcher.png')
-              resized.save(full_path + '/ic_launcher_round.png')
-              resized.save(full_path + '/ic_launcher_foreground.png')
-          "
+          
+          declare -A sizes=( ["mipmap-mdpi"]="48x48" ["mipmap-hdpi"]="72x72" ["mipmap-xhdpi"]="96x96" ["mipmap-xxhdpi"]="144x144" ["mipmap-xxxhdpi"]="192x192" )
+          
+          for dir in "${!sizes[@]}"; do
+            target_dir="android/app/src/main/res/$dir"
+            mkdir -p "$target_dir"
+            convert app_icon.jpg -resize "${sizes[$dir]}" "$target_dir/ic_launcher.png"
+            convert app_icon.jpg -resize "${sizes[$dir]}" "$target_dir/ic_launcher_round.png"
+            convert app_icon.jpg -resize "${sizes[$dir]}" "$target_dir/ic_launcher_foreground.png"
+          done
 
       - name: Inject Android GPS & Webview Permissions
         run: |
