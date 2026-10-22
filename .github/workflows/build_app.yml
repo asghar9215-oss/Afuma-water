@@ -30,7 +30,6 @@ jobs:
         run: |
           mkdir -p www
           
-          # Create www/index.html with your HTML Code
           cat << 'EOF' > www/index.html
           <!DOCTYPE html>
           <html lang="ur" dir="rtl">
@@ -79,6 +78,7 @@ jobs:
               </style>
               <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
               <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
           </head>
           <body>
           <div id="musicContainer"></div>
@@ -86,8 +86,8 @@ jobs:
               <div class="help-arrow">⬆️</div>
               <div class="help-content">
                   <h2 style="color:yellow; margin-top:0;">⚠️ لوکیشن بلاک ہے!</h2>
-                  <p style="font-size:16px; line-height:1.6;">لوکیشن آن کرنے کے لیے اوپر تالے2 🔑🔑 چابی پر کلک کر کے 📍Permission Allow 📍 کریں اور پھر پیج ریفریش کریں۔</p>
-                  <button onclick="location.reload()" style="background:#00e676; color:black; padding:15px; width:100%; font-weight:bold; font-size:18px; border-radius:10px; border:none; cursor:pointer; margin-top:10px;">🔄 ریفریش کریں</button>
+                  <p style="font-size:16px; line-height:1.6;">لوکیشن آن کرنے کے لیے ڈیوائس کی GPS اور Permissions الاؤ کریں۔</p>
+                  <button onclick="autoGetLocation()" style="background:#00e676; color:black; padding:15px; width:100%; font-weight:bold; font-size:18px; border-radius:10px; border:none; cursor:pointer; margin-top:10px;">🔄 دوبارہ کوشش کریں</button>
                   <button onclick="document.getElementById('permHelpModal').style.display='none'" style="background:transparent; color:white; border:1px solid white; padding:10px; width:100%; margin-top:10px; border-radius:10px;">بند کریں</button>
               </div>
           </div>
@@ -155,6 +155,7 @@ jobs:
                   </button>
                   <div class="quran-strip" style="font-size:14px; padding:4px 8px; margin-bottom:6px;"><span>وَاللَّهُ خَيْرُ الرَّازِقِينَ</span></div>
                   <div id="receiptContent"></div>
+                  <button onclick="downloadPDF()" style="background:#0288d1; color:white; border:none; width:100%; padding:10px; margin-top:8px; border-radius:5px; font-weight:bold; cursor:pointer;">📄 رسید PDF ڈاؤن لوڈ کریں</button>
                   <p style="margin:8px 0 2px; font-size:13px; color:red; font-weight:bold;">اپنا انعام اور بیل رسید دیکھنے کے لیے نیچے لینک پر کلک کریں⬇️</p>
                   <a href="https://afumawater.blogspot.com" target="_blank" class="web-link-btn">🌐 afumawater.blogspot.com</a>
                   <button onclick="closeModal()" style="background:#d32f2f; color:white; border:none; width:100%; padding:8px; margin-top:8px; border-radius:5px; font-weight:bold;">بند کریں</button>
@@ -171,18 +172,34 @@ jobs:
               const packInfo = { "half_liter": 12, "one_point_five": 6, "nineteen_liter": 1 };
               let musicStarted = false;
               function playMusic() { if (!musicStarted) { musicStarted = true; document.getElementById('musicContainer').innerHTML = `<iframe src="https://www.youtube.com/embed/wosQoGcgrew?autoplay=1&loop=1" allow="autoplay"></iframe>`; setTimeout(() => { document.getElementById('musicContainer').innerHTML = ""; }, 90000); } }
-              function autoGetLocation() { const helpModal = document.getElementById('permHelpModal'); const options = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }; if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((pos) => { userLoc = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`; }, (err) => { if(err.code === 1) helpModal.style.display = "block"; }, options); } }
+              function autoGetLocation() { 
+                  const helpModal = document.getElementById('permHelpModal'); 
+                  const options = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }; 
+                  if (navigator.geolocation) { 
+                      navigator.geolocation.getCurrentPosition(
+                          (pos) => { 
+                              userLoc = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`; 
+                              helpModal.style.display = "none"; 
+                          }, 
+                          (err) => { 
+                              if(!userLoc) helpModal.style.display = "block"; 
+                          }, 
+                          options
+                      ); 
+                  } 
+              }
               window.onload = () => { fetchRates(); loadLcdImages(); autoGetLocation(); if(user) { showOrderSec(); } setInterval(updateTime, 1000); };
               function loadLcdImages() { db.collection("prizes").get().then(snap => { const loginLcd = document.getElementById('loginLcd'); let imagesHtml = ""; snap.forEach((doc, index) => { let p = doc.data(); imagesHtml += `<img src="${p.image}" class="${index === 0 ? 'active' : ''}">`; }); if(loginLcd) loginLcd.innerHTML = imagesHtml; if(snap.size > 1) startLcdSlider(); }); }
               function startLcdSlider() { let currentIdx = 0; setInterval(() => { const lcds = document.querySelectorAll('.lcd-screen'); lcds.forEach(lcd => { const imgs = lcd.querySelectorAll('img'); if(imgs.length > 0) { imgs[currentIdx].classList.remove('active'); currentIdx = (currentIdx + 1) % imgs.length; imgs[currentIdx].classList.add('active'); } }); }, 1000); }
               function fetchRates() { db.collection("settings").doc("prices").onSnapshot(doc => { if(doc.exists) { packRates = doc.data().water_pack; updatePrice(); } }); }
               function updatePrice() { let sizeKey = document.getElementById('itemSize').value; let packs = document.getElementById('orderPacks').value || 0; let rate = packRates[sizeKey] || 0; document.getElementById('unitRate').value = rate; document.getElementById('totalBill').innerText = rate * packs; }
               function updateTime() { let now = new Date(); document.getElementById('liveDate').innerText = now.toLocaleDateString('en-GB'); document.getElementById('liveTime').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
-              function handleLogin() { playMusic(); let n = document.getElementById('loginName').value; let p = document.getElementById('loginPhone').value; let pass = document.getElementById('loginPassword').value; if(!n || p.length < 11 || !pass) return alert("درست نام، موبائل نمبر اور پاسورڈ درج کریں"); if(userLoc === "") { autoGetLocation(); return alert("لوکیشن حاصل کی جا رہی ہے، براہ کرم ایک لمحہ انتظار کریں اور لوکیشن الاؤ کریں۔"); } user = { name: n, phone: p }; localStorage.setItem("afuma_user", JSON.stringify(user)); showOrderSec(); }
+              function handleLogin() { playMusic(); let n = document.getElementById('loginName').value; let p = document.getElementById('loginPhone').value; let pass = document.getElementById('loginPassword').value; if(!n || p.length < 11 || !pass) return alert("درست نام، موبائل نمبر اور پاسورڈ درج کریں"); if(userLoc === "") { autoGetLocation(); return alert("لوکیشن حاصل کی جا رہی ہے، براہ کرم لوکیشن الاؤ کریں۔"); } user = { name: n, phone: p }; localStorage.setItem("afuma_user", JSON.stringify(user)); showOrderSec(); }
               function showOrderSec() { document.getElementById('login-sec').classList.add('hidden'); document.getElementById('order-sec').classList.remove('hidden'); document.getElementById('liveDate').innerHTML = user.name + "<br>" + user.phone; document.getElementById('logoutBtnHeader').style.display = 'block'; document.getElementById('defaultInfoLeft').style.display = 'none'; loadHistory(); }
-              function placeOrder() { let select = document.getElementById('itemSize'); let sizeText = select.options[select.selectedIndex].text; let sizeKey = select.value; let packs = document.getElementById('orderPacks').value; let total = document.getElementById('totalBill').innerText; if(!userLoc || userLoc === "" || !sizeKey || !packs || packs == 0) return alert("فارم مکمل کریں اور لوکیشن یقینی بنائیں"); let orderData = { name: user.name, phone: user.phone, size: sizeText, packs: packs, packing: packInfo[sizeKey] || 1, total_bottles: packs * (packInfo[sizeKey] || 1), rate: packRates[sizeKey], total: total, loc: userLoc, order_from: "online_app", date: new Date().toLocaleDateString('en-GB'), time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), status: "Pending", ts: firebase.firestore.FieldValue.serverTimestamp() }; db.collection("orders").add(orderData).then(() => { let msg = `*Online Bottle Order*%0A📅 *تاریخ:* ${orderData.date}%0A⏰ *وقت:* ${orderData.time}%0A📍 *لوکیشن:* ${orderData.loc}%0A🛒 *خریدار:* ${orderData.name}%0A📱 *نمبر:* ${orderData.phone}%0A📦 *آئٹم:* ${orderData.size}%0A💰 *ریٹ:* ${orderData.rate}%0A🔢 *کل پیٹ:* ${orderData.packs}%0A💵 *کل رقم:* Rs ${orderData.total}`; window.location.href = `https://wa.me/923258833319?text=${msg}`; document.getElementById('itemSize').selectedIndex = 0; document.getElementById('orderPacks').value = ""; document.getElementById('unitRate').value = ""; document.getElementById('totalBill').innerText = "0"; loadHistory(); }).catch(e => alert("Error: "+e.message)); }
+              function placeOrder() { let select = document.getElementById('itemSize'); let sizeText = select.options[select.selectedIndex].text; let sizeKey = select.value; let packs = document.getElementById('orderPacks').value; let total = document.getElementById('totalBill').innerText; if(!userLoc || userLoc === "" || !sizeKey || !packs || packs == 0) return alert("فارم مکمل کریں اور لوکیشن یقینی بنائیں"); let orderData = { name: user.name, phone: user.phone, size: sizeText, packs: packs, packing: packInfo[sizeKey] || 1, total_bottles: packs * (packInfo[sizeKey] || 1), rate: packRates[sizeKey], total: total, loc: userLoc, order_from: "online_app", date: new Date().toLocaleDateString('en-GB'), time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), status: "Pending", ts: firebase.firestore.FieldValue.serverTimestamp() }; db.collection("orders").add(orderData).then(() => { let msg = `*Online Bottle Order*%0A📅 *تاریخ:* ${orderData.date}%0A⏰ *وقت:* ${orderData.time}%0A📍 *لوکیشن:* ${orderData.loc}%0A🛒 *خریدار:* ${orderData.name}%0A📱 *نمبر:* ${orderData.phone}%0A📦 *آئٹم:* ${orderData.size}%0A💰 *ریٹ:* ${orderData.rate}%0A🔢 *کل پیٹ:* ${orderData.packs}%0A💵 *کل رقم:* Rs ${orderData.total}`; window.open(`https://wa.me/923258833319?text=${msg}`, '_system'); document.getElementById('itemSize').selectedIndex = 0; document.getElementById('orderPacks').value = ""; document.getElementById('unitRate').value = ""; document.getElementById('totalBill').innerText = "0"; loadHistory(); }).catch(e => alert("Error: "+e.message)); }
               function loadHistory() { db.collection("orders").where("phone", "==", user.phone).where("order_from", "==", "online_app").onSnapshot(snap => { let html = ""; let docs = snap.docs.sort((a,b) => (b.data().ts?.seconds || 0) - (a.data().ts?.seconds || 0)); docs.forEach(doc => { let d = doc.data(); let statusClass = d.status === "Received" ? "status-btn-received" : "status-btn-pending"; let statusText = d.status === "Received" ? "✅ آرڈر وصول ہو گیا" : "⏳ انتظار کریں، آرڈر جلد آپ تک پہنچ رہا ہے"; html += `<div style="margin:8px 0;"><button class="${statusClass}">${statusText}</button><div style="background:#eee; padding:8px; border-radius:0 0 8px 8px; display:flex; justify-content:space-between; cursor:pointer; border:1px solid #ccc; border-top:none;" onclick='showReceipt(${JSON.stringify(d)})'><span>${d.size}</span><span>Rs. ${d.total} ❯</span></div></div>`; }); document.getElementById('historyContainer').innerHTML = html || "کوئی آرڈر نہیں ملا"; }); }
-              function showReceipt(d) { let html = `<img src="https://i.ibb.co/xtxD8VRD/9778.jpg" class="round-icon-top" onclick="window.open('https://afumawater.blogspot.com')"><h4 style="color:#2e7d32; margin:0;">AFUMA MINERAL WATER</h4><p style="margin:2px 0; font-size:12px;">Asghar Ali - 03258833319</p><div style="border-top:1px solid #ccc; border-bottom:1px solid #ccc; padding:3px; margin:5px 0; font-weight:bold; color:purple; font-size:13px;">ONLINE ORDER</div><table class="rec-table"><tr><td>تاریخ:</td><td class="rec-val">${d.date}</td></tr><tr><td>وقت:</td><td class="rec-val">${d.time}</td></tr><tr><td>خریدار:</td><td class="rec-val">${d.name}</td></tr><tr><td>آئٹم:</td><td class="rec-val">${d.size}</td></tr><tr><td>ریٹ:</td><td class="rec-val">${d.rate}</td></tr><tr><td>کل پیٹ:</td><td class="rec-val">${d.packs}</td></tr><tr style="border-top:2px solid #2e7d32;"><td style="font-size:15px; color:purple;">ٹوٹل رقم:</td><td class="rec-val" style="font-size:17px; color:green;">Rs ${d.total}</td></tr></table>`; document.getElementById('receiptContent').innerHTML = html; document.getElementById('receiptModal').style.display = 'block'; }
+              function showReceipt(d) { let html = `<div id="pdfPrintArea"><img src="https://i.ibb.co/xtxD8VRD/9778.jpg" class="round-icon-top" onclick="window.open('https://afumawater.blogspot.com')"><h4 style="color:#2e7d32; margin:0;">AFUMA MINERAL WATER</h4><p style="margin:2px 0; font-size:12px;">Asghar Ali - 03258833319</p><div style="border-top:1px solid #ccc; border-bottom:1px solid #ccc; padding:3px; margin:5px 0; font-weight:bold; color:purple; font-size:13px;">ONLINE ORDER</div><table class="rec-table"><tr><td>تاریخ:</td><td class="rec-val">${d.date}</td></tr><tr><td>وقت:</td><td class="rec-val">${d.time}</td></tr><tr><td>خریدار:</td><td class="rec-val">${d.name}</td></tr><tr><td>آئٹم:</td><td class="rec-val">${d.size}</td></tr><tr><td>ریٹ:</td><td class="rec-val">${d.rate}</td></tr><tr><td>کل پیٹ:</td><td class="rec-val">${d.packs}</td></tr><tr style="border-top:2px solid #2e7d32;"><td style="font-size:15px; color:purple;">ٹوٹل رقم:</td><td class="rec-val" style="font-size:17px; color:green;">Rs ${d.total}</td></tr></table></div>`; document.getElementById('receiptContent').innerHTML = html; document.getElementById('receiptModal').style.display = 'block'; }
+              function downloadPDF() { const element = document.getElementById('pdfPrintArea'); html2pdf().from(element).save('Afuma_Order_Receipt.pdf'); }
               function closeModal() { document.getElementById('receiptModal').style.display = 'none'; }
               function logout() { localStorage.clear(); location.reload(); }
           </script>
@@ -190,7 +207,6 @@ jobs:
           </html>
           EOF
 
-          # Create www/manifest.json
           cat << 'EOF' > www/manifest.json
           {
             "name": "AFUMA Water Order",
@@ -202,20 +218,19 @@ jobs:
           }
           EOF
 
-          # Create www/sw.js
           cat << 'EOF' > www/sw.js
           self.addEventListener('install', (e) => {});
           self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request)); });
           EOF
 
-          # Create package.json
           cat << 'EOF' > package.json
           {
             "name": "com.afumawater.orderapp",
             "version": "1.0.0",
             "dependencies": {
               "@capacitor/android": "^5.0.0",
-              "@capacitor/core": "^5.0.0"
+              "@capacitor/core": "^5.0.0",
+              "@capacitor/geolocation": "^5.0.0"
             },
             "devDependencies": {
               "@capacitor/cli": "^5.0.0"
@@ -223,13 +238,17 @@ jobs:
           }
           EOF
 
-          # Create capacitor.config.json
           cat << 'EOF' > capacitor.config.json
           {
             "appId": "com.afumawater.orderapp",
             "appName": "AFUMA Water",
             "webDir": "www",
-            "bundledWebRuntime": false
+            "bundledWebRuntime": false,
+            "plugins": {
+              "CapacitorCookies": {
+                "enabled": true
+              }
+            }
           }
           EOF
 
@@ -238,6 +257,13 @@ jobs:
           npm install
           npx cap add android
           npx cap copy android
+
+      - name: Inject Android GPS & Webview Permissions
+        run: |
+          MANIFEST_PATH="android/app/src/main/AndroidManifest.xml"
+          sed -i '/<\/manifest>/i \    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" \/>' $MANIFEST_PATH
+          sed -i '/<\/manifest>/i \    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" \/>' $MANIFEST_PATH
+          sed -i '/<\/manifest>/i \    <uses-feature android:name="android.hardware.location.gps" \/>' $MANIFEST_PATH
 
       - name: Build Debug APK
         run: |
