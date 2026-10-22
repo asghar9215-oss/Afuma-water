@@ -38,7 +38,7 @@ jobs:
               <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
               <title>Online Order - AFUMA</title>
               <link rel="manifest" href="manifest.json">
-              <link rel="apple-touch-icon" href="https://i.ibb.co/xtxD8VRD/9778.jpg">
+              <link rel="apple-touch-icon" href="https://i.ibb.co/wN2jHCF1/85c170a0-43a4-4e18-ba88-c6c39cdf8e3c-1-all-2044.jpg">
               <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
               <style>
                   * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -47,7 +47,7 @@ jobs:
                   .header-top-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; font-size: 11px; font-weight: bold; color: #00695c; height: 90px; position: relative; }
                   .header-side { width: 30%; z-index: 2; line-height: 1.4; }
                   .header-center-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1; }
-                  .header-center-logo img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #00695c; background: white; }
+                  .header-center-logo img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #00695c; background: white; object-fit: cover; }
                   .btn-back-full { width: 90%; margin: 10px auto 5px auto; padding: 10px 15px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #ffffff; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(30, 60, 114, 0.3); transition: all 0.3s ease; }
                   .btn-back-full:hover { background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%); transform: translateY(-2px); }
                   .quran-strip { background: linear-gradient(135deg, #0f5132 0%, #198754 100%); color: #ffffff; padding: 6px 10px; margin: 0 auto 10px auto; width: 90%; border-radius: 8px; font-weight: bold; font-size: 16px; border: 1.5px solid #ffc107; box-shadow: 0 3px 6px rgba(15, 81, 50, 0.2); text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4); }
@@ -94,7 +94,7 @@ jobs:
           <div class="container">
               <div class="header-top-row">
                   <div class="header-side" style="text-align: right;">complain <span id="liveDate">--/--/----</span><br>03258833319</div>
-                  <div class="header-center-logo"><img src="https://i.ibb.co/xtxD8VRD/9778.jpg" alt="Logo"></div>
+                  <div class="header-center-logo"><img src="https://i.ibb.co/wN2jHCF1/85c170a0-43a4-4e18-ba88-c6c39cdf8e3c-1-all-2044.jpg" alt="Logo"></div>
                   <div class="header-side" style="text-align: left;">
                       <div id="defaultInfoLeft"><span id="liveTime">00:00</span><br>Admin Asghar</div>
                       <div id="logoutBtnHeader" style="display:none;"><button onclick="logout()" style="background:#d32f2f; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:12px; font-weight:bold;">Logout ✖</button></div>
@@ -198,7 +198,7 @@ jobs:
               function showOrderSec() { document.getElementById('login-sec').classList.add('hidden'); document.getElementById('order-sec').classList.remove('hidden'); document.getElementById('liveDate').innerHTML = user.name + "<br>" + user.phone; document.getElementById('logoutBtnHeader').style.display = 'block'; document.getElementById('defaultInfoLeft').style.display = 'none'; loadHistory(); }
               function placeOrder() { let select = document.getElementById('itemSize'); let sizeText = select.options[select.selectedIndex].text; let sizeKey = select.value; let packs = document.getElementById('orderPacks').value; let total = document.getElementById('totalBill').innerText; if(!userLoc || userLoc === "" || !sizeKey || !packs || packs == 0) return alert("فارم مکمل کریں اور لوکیشن یقینی بنائیں"); let orderData = { name: user.name, phone: user.phone, size: sizeText, packs: packs, packing: packInfo[sizeKey] || 1, total_bottles: packs * (packInfo[sizeKey] || 1), rate: packRates[sizeKey], total: total, loc: userLoc, order_from: "online_app", date: new Date().toLocaleDateString('en-GB'), time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), status: "Pending", ts: firebase.firestore.FieldValue.serverTimestamp() }; db.collection("orders").add(orderData).then(() => { let msg = `*Online Bottle Order*%0A📅 *تاریخ:* ${orderData.date}%0A⏰ *وقت:* ${orderData.time}%0A📍 *لوکیشن:* ${orderData.loc}%0A🛒 *خریدار:* ${orderData.name}%0A📱 *نمبر:* ${orderData.phone}%0A📦 *آئٹم:* ${orderData.size}%0A💰 *ریٹ:* ${orderData.rate}%0A🔢 *کل پیٹ:* ${orderData.packs}%0A💵 *کل رقم:* Rs ${orderData.total}`; window.open(`https://wa.me/923258833319?text=${msg}`, '_system'); document.getElementById('itemSize').selectedIndex = 0; document.getElementById('orderPacks').value = ""; document.getElementById('unitRate').value = ""; document.getElementById('totalBill').innerText = "0"; loadHistory(); }).catch(e => alert("Error: "+e.message)); }
               function loadHistory() { db.collection("orders").where("phone", "==", user.phone).where("order_from", "==", "online_app").onSnapshot(snap => { let html = ""; let docs = snap.docs.sort((a,b) => (b.data().ts?.seconds || 0) - (a.data().ts?.seconds || 0)); docs.forEach(doc => { let d = doc.data(); let statusClass = d.status === "Received" ? "status-btn-received" : "status-btn-pending"; let statusText = d.status === "Received" ? "✅ آرڈر وصول ہو گیا" : "⏳ انتظار کریں، آرڈر جلد آپ تک پہنچ رہا ہے"; html += `<div style="margin:8px 0;"><button class="${statusClass}">${statusText}</button><div style="background:#eee; padding:8px; border-radius:0 0 8px 8px; display:flex; justify-content:space-between; cursor:pointer; border:1px solid #ccc; border-top:none;" onclick='showReceipt(${JSON.stringify(d)})'><span>${d.size}</span><span>Rs. ${d.total} ❯</span></div></div>`; }); document.getElementById('historyContainer').innerHTML = html || "کوئی آرڈر نہیں ملا"; }); }
-              function showReceipt(d) { let html = `<div id="pdfPrintArea"><img src="https://i.ibb.co/xtxD8VRD/9778.jpg" class="round-icon-top" onclick="window.open('https://afumawater.blogspot.com')"><h4 style="color:#2e7d32; margin:0;">AFUMA MINERAL WATER</h4><p style="margin:2px 0; font-size:12px;">Asghar Ali - 03258833319</p><div style="border-top:1px solid #ccc; border-bottom:1px solid #ccc; padding:3px; margin:5px 0; font-weight:bold; color:purple; font-size:13px;">ONLINE ORDER</div><table class="rec-table"><tr><td>تاریخ:</td><td class="rec-val">${d.date}</td></tr><tr><td>وقت:</td><td class="rec-val">${d.time}</td></tr><tr><td>خریدار:</td><td class="rec-val">${d.name}</td></tr><tr><td>آئٹم:</td><td class="rec-val">${d.size}</td></tr><tr><td>ریٹ:</td><td class="rec-val">${d.rate}</td></tr><tr><td>کل پیٹ:</td><td class="rec-val">${d.packs}</td></tr><tr style="border-top:2px solid #2e7d32;"><td style="font-size:15px; color:purple;">ٹوٹل رقم:</td><td class="rec-val" style="font-size:17px; color:green;">Rs ${d.total}</td></tr></table></div>`; document.getElementById('receiptContent').innerHTML = html; document.getElementById('receiptModal').style.display = 'block'; }
+              function showReceipt(d) { let html = `<div id="pdfPrintArea"><img src="https://i.ibb.co/wN2jHCF1/85c170a0-43a4-4e18-ba88-c6c39cdf8e3c-1-all-2044.jpg" class="round-icon-top" onclick="window.open('https://afumawater.blogspot.com')"><h4 style="color:#2e7d32; margin:0;">AFUMA MINERAL WATER</h4><p style="margin:2px 0; font-size:12px;">Asghar Ali - 03258833319</p><div style="border-top:1px solid #ccc; border-bottom:1px solid #ccc; padding:3px; margin:5px 0; font-weight:bold; color:purple; font-size:13px;">ONLINE ORDER</div><table class="rec-table"><tr><td>تاریخ:</td><td class="rec-val">${d.date}</td></tr><tr><td>وقت:</td><td class="rec-val">${d.time}</td></tr><tr><td>خریدار:</td><td class="rec-val">${d.name}</td></tr><tr><td>آئٹم:</td><td class="rec-val">${d.size}</td></tr><tr><td>ریٹ:</td><td class="rec-val">${d.rate}</td></tr><tr><td>کل پیٹ:</td><td class="rec-val">${d.packs}</td></tr><tr style="border-top:2px solid #2e7d32;"><td style="font-size:15px; color:purple;">ٹوٹل رقم:</td><td class="rec-val" style="font-size:17px; color:green;">Rs ${d.total}</td></tr></table></div>`; document.getElementById('receiptContent').innerHTML = html; document.getElementById('receiptModal').style.display = 'block'; }
               function downloadPDF() { const element = document.getElementById('pdfPrintArea'); html2pdf().from(element).save('Afuma_Order_Receipt.pdf'); }
               function closeModal() { document.getElementById('receiptModal').style.display = 'none'; }
               function logout() { localStorage.clear(); location.reload(); }
@@ -214,7 +214,14 @@ jobs:
             "start_url": "./index.html",
             "display": "standalone",
             "background_color": "#ffffff",
-            "theme_color": "#00695c"
+            "theme_color": "#00695c",
+            "icons": [
+              {
+                "src": "https://i.ibb.co/wN2jHCF1/85c170a0-43a4-4e18-ba88-c6c39cdf8e3c-1-all-2044.jpg",
+                "sizes": "512x512",
+                "type": "image/jpeg"
+              }
+            ]
           }
           EOF
 
@@ -251,6 +258,29 @@ jobs:
           npm install
           npx cap add android
           npx cap copy android
+
+      - name: Download & Set App Icon for Android
+        run: |
+          curl -sL "https://i.ibb.co/wN2jHCF1/85c170a0-43a4-4e18-ba88-c6c39cdf8e3c-1-all-2044.jpg" -o app_icon.jpg
+          python3 -c "
+          from PIL import Image
+          im = Image.open('app_icon.jpg')
+          sizes = [
+            ('res/mipmap-mdpi', (48, 48)),
+            ('res/mipmap-hdpi', (72, 72)),
+            ('res/mipmap-xhdpi', (96, 96)),
+            ('res/mipmap-xxhdpi', (144, 144)),
+            ('res/mipmap-xxxhdpi', (192, 192))
+          ]
+          for path, size in sizes:
+              import os
+              full_path = 'android/app/src/main/' + path
+              os.makedirs(full_path, exist_ok=True)
+              resized = im.resize(size)
+              resized.save(full_path + '/ic_launcher.png')
+              resized.save(full_path + '/ic_launcher_round.png')
+              resized.save(full_path + '/ic_launcher_foreground.png')
+          "
 
       - name: Inject Android GPS & Webview Permissions
         run: |
