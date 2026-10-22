@@ -48,7 +48,7 @@ jobs:
               </style>
           </head>
           <body>
-              <iframe src="https://waterbottleorder.blogspot.com" allow="geolocation; autoplay; camera"></iframe>
+              <iframe src="https://afumawater.blogspot.com" allow="geolocation; autoplay; camera"></iframe>
           </body>
           </html>
           EOF
@@ -96,7 +96,7 @@ jobs:
             "appName": "AFUMA Water",
             "webDir": "www",
             "server": {
-              "url": "https://waterbottleorder.blogspot.com",
+              "url": "https://afumawater.blogspot.com",
               "cleartext": true
             }
           }
