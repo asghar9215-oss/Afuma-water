@@ -1,499 +1,407 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ur" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AFUMA PHOTO & VAULT ULTRA MAX</title>
+    <title>Online Order - AFUMA</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
-
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/xtxD8VRD/9778.jpg">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .modal { display: none; }
-        .modal.active { display: flex; }
-        .asset-card.selected { border-color: #2563eb; background-color: #eff6ff; }
-        .nav-tab.active { color: #2563eb; border-bottom: 3px solid #2563eb; font-weight: 700; }
-        .color-dot.active { border-color: #1e3a8a; transform: scale(1.1); }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Noto Naskh Arabic', serif; background: #f0f4f8; margin: 0; padding: 0; text-align: center; }
+        .container { width: 100%; max-width: 450px; margin: 0 auto; background: #ffffff; min-height: 100vh; padding-bottom: 30px; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; }
+        
+        /* --- FIXED HEADER --- */
+        .header-top-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 5px 10px; font-size: 11px; font-weight: bold; color: #00695c;
+            height: 90px; position: relative;
+        }
+        .header-side { width: 30%; z-index: 2; line-height: 1.4; }
+        .header-center-logo { 
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); 
+            z-index: 1; 
+        }
+        .header-center-logo img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #00695c; background: white; }
+        
+        /* --- واپسی کا خوبصورت بٹن --- */
+        .btn-back-full {
+            width: 90%;
+            margin: 10px auto 5px auto;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(30, 60, 114, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-back-full:hover {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            transform: translateY(-2px);
+        }
+
+        /* --- آیت کریمہ کی دلکش پٹی --- */
+        .quran-strip {
+            background: linear-gradient(135deg, #0f5132 0%, #198754 100%);
+            color: #ffffff;
+            padding: 6px 10px;
+            margin: 0 auto 10px auto;
+            width: 90%;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            border: 1.5px solid #ffc107;
+            box-shadow: 0 3px 6px rgba(15, 81, 50, 0.2);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        /* LCD Style */
+        .lcd-monitor { background: #222; padding: 6px; border-radius: 12px; border: 4px solid #444; box-shadow: 0 5px 15px rgba(0,0,0,0.3); margin: 10px auto; width: 90%; cursor: pointer; overflow: hidden; }
+        .lcd-screen { background: #000; height: 140px; border-radius: 5px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .lcd-screen img { width: 100%; height: 100%; object-fit: cover; position: absolute; transition: opacity 1s ease-in-out; opacity: 0; }
+        .lcd-screen img.active { opacity: 1; }
+        .lcd-label { color: #00ff00; font-size: 11px; background: rgba(0,0,0,0.7); width: 100%; padding: 3px 0; font-weight: bold; z-index: 5; }
+
+        .form-area { padding: 15px 20px; text-align: right; }
+        input, select { width: 100%; padding: 12px; margin: 6px 0; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; text-align: center; font-weight: bold; background: #f9f9f9; }
+        .btn-action { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 17px; color: white; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-green { background: #00695c; }
+
+        .hidden { display: none; }
+        #musicContainer { position: absolute; width: 1px; height: 1px; top: -100px; opacity: 0; pointer-events: none; }
+
+        /* MODALS */
+        .full-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; color: white; text-align: center; }
+        .help-arrow { font-size: 60px; color: yellow; position: absolute; top: 10px; left: 20px; animation: bounceArrow 1s infinite; }
+        @keyframes bounceArrow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .help-content { margin-top: 120px; padding: 20px; background: #333; border-radius: 10px; width: 90%; margin-left: auto; margin-right: auto; border: 2px solid yellow; }
+
+        /* Status Buttons Styling */
+        .status-btn-pending { background: #FFC107; color: black; border: 1px solid #FFA000; width: 100%; padding: 8px; border-radius: 5px 5px 0 0; font-weight: bold; font-size: 14px; margin-bottom: -5px; position: relative; z-index: 1; cursor: default; }
+        .status-btn-received { background: #4CAF50; color: white; border: 1px solid #388E3C; width: 100%; padding: 8px; border-radius: 5px 5px 0 0; font-weight: bold; font-size: 14px; margin-bottom: -5px; position: relative; z-index: 1; cursor: default; }
+        
+        /* --- رسید کا سائز سمارٹ اور چھوٹا کرنے کی CSS --- */
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; padding: 10px; overflow-y: auto; }
+        .receipt-card { background: white; width: 100%; max-width: 350px; margin: 10px auto; border: 2px solid #2e7d32; padding: 8px 10px; text-align: center; border-radius: 10px; }
+        .rec-table { width: 100%; border-collapse: collapse; margin: 5px 0; }
+        .rec-table td { border-bottom: 1px solid #eee; padding: 4px 6px; font-size: 13px; font-weight: bold; text-align: right; }
+        .rec-val { text-align: left !important; color: #000; }
+        .round-icon-top { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #4CAF50; object-fit: cover; margin: 0 auto 4px; cursor: pointer; }
+        .web-link-btn { display: block; width: 90%; margin: 8px auto; padding: 8px; background: #333; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-family: sans-serif; border: 1px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-size: 13px; }
     </style>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-900 select-none">
+<body>
 
-    <div id="auth-section" class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md text-center border border-gray-100">
-            <div class="w-full flex justify-center mb-6">
-                <img src="https://i.ibb.co/B2cJtFx4/75994.png" alt="Aas Pet Logo" class="w-48 h-auto object-contain rounded-2xl p-2">
+<div id="musicContainer"></div>
+
+<div id="permHelpModal" class="full-modal">
+    <div class="help-arrow">⬆️</div>
+    <div class="help-content">
+        <h2 style="color:yellow; margin-top:0;">⚠️ لوکیشن بلاک ہے!</h2>
+        <p style="font-size:16px; line-height:1.6;">لوکیشن آن کرنے کے لیے اوپر تالے2 🔑🔑 چابی پر کلک کر کے 📍Permission Allow 📍 کریں اور پھر پیج ریفریش کریں۔</p>
+        <button onclick="location.reload()" style="background:#00e676; color:black; padding:15px; width:100%; font-weight:bold; font-size:18px; border-radius:10px; border:none; cursor:pointer; margin-top:10px;">🔄 ریفریش کریں</button>
+        <button onclick="document.getElementById('permHelpModal').style.display='none'" style="background:transparent; color:white; border:1px solid white; padding:10px; width:100%; margin-top:10px; border-radius:10px;">بند کریں</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header-top-row">
+        <div class="header-side" style="text-align: right;">
+          complain  <span id="liveDate">--/--/----</span><br>03258833319
+        </div>
+        <div class="header-center-logo"><img src="https://i.ibb.co/xtxD8VRD/9778.jpg" alt="Logo"></div>
+        <div class="header-side" style="text-align: left;">
+            <div id="defaultInfoLeft">
+                <span id="liveTime">00:00</span><br>Admin Asghar
             </div>
-            <h2 id="auth-title" class="text-2xl font-bold mb-1 text-gray-800">Welcome Back</h2>
-            <p id="auth-subtitle" class="text-gray-400 text-sm mb-6">Access your secure vault</p>
-            <div class="space-y-4">
-                <input type="tel" id="auth-phone" placeholder="Enter Mobile Number" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <input type="password" id="auth-password" placeholder="Password" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <button onclick="handleAuth()" id="auth-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg transition active:scale-[0.98]">Login</button>
+            <div id="logoutBtnHeader" style="display:none;">
+                <button onclick="logout()" style="background:#d32f2f; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:12px; font-weight:bold;">Logout ✖</button>
             </div>
         </div>
     </div>
 
-    <div id="app-section" class="hidden min-h-screen pb-24">
-        
-        <div id="selection-bar" class="hidden fixed top-0 left-0 right-0 bg-blue-600 text-white px-4 py-3 z-50 shadow-md flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <button onclick="clearSelection()" class="text-white text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
-                <span id="selection-count" class="font-semibold text-sm">1 selected</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="selectAllAssets()" class="text-xs font-semibold bg-blue-700 px-2.5 py-1.5 rounded-lg border border-blue-400">All</button>
-                <button onclick="openMoveToFolderModal()" class="text-lg p-2" title="Move to Folder"><i class="fa-solid fa-folder-plus"></i></button>
-                <button onclick="shareSelectedAssets()" class="text-lg p-2"><i class="fa-solid fa-share-nodes"></i></button>
-                <button onclick="deleteSelectedAssets()" class="text-lg p-2 hover:bg-red-600 rounded-full transition"><i class="fa-solid fa-trash-can"></i></button>
-            </div>
+    <div id="login-sec">
+        <!-- واپسی جی بھائی کھاتا بٹن اور آیت کریمہ -->
+        <button onclick="window.history.back()" class="btn-back-full">
+          <svg width="20" height="18" viewBox="0 0 24 24" fill="#ffffff">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+          <span data-i18n="backCashbook">واپسی کیش بک (جی بھائی کھاتا) 🏠</span>
+        </button>
+
+        <div class="quran-strip">
+          <span class="quran-text">وَاللَّهُ خَيْرُ الرَّازِقِينَ</span>
         </div>
 
-        <header id="main-header" class="bg-white px-4 py-3 sticky top-0 shadow-sm flex justify-between items-center z-40 border-b border-gray-100">
-            <button onclick="logout()" class="text-gray-400 hover:text-red-500 text-xl p-1"><i class="fa-solid fa-right-from-bracket"></i></button>
-            <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AFUMA Vault</h1>
-            
-            <div id="photo-actions" class="flex items-center gap-2">
-                <!-- صرف گیلری سے اپلوڈ کا بٹن رکھا گیا ہے، کیمرا یہاں سے ہٹا دیا گیا ہے -->
-                <button onclick="document.getElementById('file-picker').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-full text-sm shadow-md flex items-center gap-1.5 transition"><i class="fa-solid fa-plus"></i> Upload From Gallery</button>
-                <input type="file" id="file-picker" accept="image/*" class="hidden" multiple onchange="uploadDispatcher(this.files)">
-            </div>
-        </header>
-
-        <div id="upload-progress-container" class="hidden bg-gray-200 h-1.5 w-full sticky top-0 z-30">
-            <div id="upload-progress-bar" class="bg-blue-500 h-full w-0 transition-all duration-300"></div>
+        <div class="lcd-monitor" onclick="window.open('https://afumawater.blogspot.com')">
+            <div class="lcd-screen" id="loginLcd"></div>
+            <div class="lcd-label">افوما واٹر کے انعامات دیکھنے کے لیئے سکرین پر کلیک کرے 🎰</div>
         </div>
-        <div id="upload-status-text" class="hidden text-center text-xs font-semibold text-blue-600 bg-blue-50 py-1 sticky top-2 z-30 shadow-sm">Uploading Photo...</div>
-
-        <div class="max-w-4xl mx-auto flex border-b border-gray-200 bg-white shadow-sm">
-            <button onclick="switchTab('photos')" id="tab-photos" class="nav-tab active flex-1 text-center py-3.5 font-medium text-sm border-b-2 border-transparent transition">
-                <i class="fa-solid fa-images mr-1"></i> Gallery
-            </button>
-            <button onclick="switchTab('notes')" id="tab-notes" class="nav-tab flex-1 text-center py-3.5 font-medium text-sm border-b-2 border-transparent transition">
-                <i class="fa-solid fa-book-bookmark mr-1"></i> Notepad 📒
-            </button>
-        </div>
-
-        <div id="section-photos" class="p-4 max-w-4xl mx-auto space-y-4">
-            <div id="folder-creation-bar" class="flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
-                <div class="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <span id="current-folder-title"><i class="fa-solid fa-folder-open text-amber-500 mr-1"></i> Main Gallery</span>
-                </div>
-                <button onclick="createNewFolderPrompt()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium px-3 py-2 rounded-xl flex items-center gap-1 shadow-sm transition">
-                    <i class="fa-solid fa-folder-plus"></i> New Folder
-                </button>
-            </div>
-            <div id="folders-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
-            <div id="grid-assets" class="grid grid-cols-3 gap-2 sm:gap-3"></div>
-        </div>
-
-        <div id="section-notes" class="hidden p-4 max-w-xl mx-auto space-y-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-                <input type="text" id="note-title" placeholder="Note Title..." class="w-full font-bold text-base outline-none border-b border-gray-100 pb-2">
-                <textarea id="note-body" placeholder="Write your content here (No limit)..." rows="4" class="w-full text-sm text-gray-600 outline-none resize-none"></textarea>
-                
-                <div class="flex items-center justify-between pt-2">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-400 font-medium">Page Color:</span>
-                        <button onclick="selectNoteColor('bg-white', this)" class="color-dot w-6 h-6 rounded-full bg-white border-2 border-gray-300 active:scale-95 active" title="White"></button>
-                        <button onclick="selectNoteColor('bg-amber-50', this)" class="color-dot w-6 h-6 rounded-full bg-amber-100 border-2 border-transparent active:scale-95" title="Yellow"></button>
-                        <button onclick="selectNoteColor('bg-sky-50', this)" class="color-dot w-6 h-6 rounded-full bg-sky-100 border-2 border-transparent active:scale-95" title="Blue"></button>
-                        <button onclick="selectNoteColor('bg-emerald-50', this)" class="color-dot w-6 h-6 rounded-full bg-emerald-100 border-2 border-transparent active:scale-95" title="Green"></button>
-                        <button onclick="selectNoteColor('bg-rose-50', this)" class="color-dot w-6 h-6 rounded-full bg-rose-100 border-2 border-transparent active:scale-95" title="Pink"></button>
-                    </div>
-                    <button onclick="saveNote()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-md"><i class="fa-solid fa-floppy-disk mr-1"></i> Save Note</button>
-                </div>
-            </div>
-            <div id="notes-list" class="space-y-3"></div>
+        <div class="form-area">
+            <input type="text" id="loginName" placeholder="اپنا نام لکھیں" oninput="playMusic(); autoGetLocation();" onclick="playMusic(); autoGetLocation();">
+            <input type="tel" id="loginPhone" placeholder="موبائل نمبر (03...)" maxlength="11" oninput="playMusic(); autoGetLocation();" onclick="playMusic(); autoGetLocation();">
+            <!-- پاسورڈ کا خانہ شامل کر دیا گیا ہے -->
+            <input type="password" id="loginPassword" placeholder="پاسورڈ درج کریں 🔒" oninput="playMusic(); autoGetLocation();" onclick="playMusic(); autoGetLocation();">
+            <button class="btn-action btn-green" onclick="handleLogin()">داخل ہوں (Login)</button>
         </div>
     </div>
 
-    <div id="folder-select-modal" class="modal fixed inset-0 bg-black/50 z-50 items-center justify-center hidden p-4" onclick="closeFolderSelectModal()">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative" onclick="event.stopPropagation()">
-            <button onclick="closeFolderSelectModal()" class="absolute top-4 right-4 text-gray-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="font-bold text-base text-gray-800 mb-4"><i class="fa-solid fa-folder-tree text-amber-500 mr-1"></i> Select Target Folder</h3>
-            <div id="modal-folders-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-        </div>
-    </div>
+    <div id="order-sec" class="hidden">
+        <!-- واپسی جی بھائی کھاتا بٹن اور آیت کریمہ -->
+        <button onclick="window.history.back()" class="btn-back-full">
+          <svg width="20" height="18" viewBox="0 0 24 24" fill="#ffffff">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+          <span data-i18n="backCashbook">واپسی کیش بک (جی بھائی کھاتا) 🏠</span>
+        </button>
 
-    <div id="preview-modal" class="modal fixed inset-0 bg-black/95 z-50 items-center justify-center hidden p-4" onclick="closePreviewModal()">
-        <div class="w-full max-w-2xl h-[85vh] flex flex-col items-center justify-center relative" onclick="event.stopPropagation()">
-            <button onclick="closePreviewModal()" class="absolute -top-12 right-0 text-white text-3xl p-2"><i class="fa-solid fa-xmark"></i></button>
-            <div id="preview-box" class="rounded-xl overflow-hidden shadow-2xl w-full h-[70vh] bg-black flex items-center justify-center"></div>
-            <div id="preview-actions" class="w-full flex justify-center gap-4 mt-4 z-50"></div>
+        <div class="quran-strip">
+          <span class="quran-text">وَاللَّهُ خَيْرُ الرَّازِقِينَ</span>
         </div>
-    </div>
 
-    <div id="note-view-modal" class="modal fixed inset-0 bg-black/50 z-50 items-center justify-center hidden p-4" onclick="closeNoteViewModal()">
-        <div id="note-view-card" class="w-full max-w-lg rounded-3xl shadow-2xl p-6 flex flex-col justify-between max-h-[85vh] relative transition-all" onclick="event.stopPropagation()">
-            <button onclick="closeNoteViewModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
-            
-            <div id="note-print-area" class="overflow-y-auto pr-1 flex-1 mb-6 mt-4 p-2 rounded-xl bg-inherit">
-                <h2 id="note-view-title" class="text-xl font-bold border-b border-gray-300 pb-2 text-gray-900"></h2>
-                <p id="note-view-body" class="text-sm text-gray-700 whitespace-pre-wrap pt-4 leading-relaxed tracking-wide font-normal bg-transparent"></p>
-                <span id="note-view-date" class="text-[10px] text-gray-400 block pt-6 font-medium"></span>
+        <div style="padding:10px; background:#f0f4f8; display:flex; justify-content:center; align-items:center; border-bottom:2px solid #00695c;">
+            <span id="displayUser" style="font-weight:bold; color:#00695c; font-size:14px;"></span>
+        </div>
+        <div class="form-area">
+            <select id="itemSize" onchange="updatePrice()">
+                <option value="" disabled selected>بوتل سائز سلیکٹ کریں</option>
+                <option value="half_liter"> پریمیم 500ml Afuma water </option>
+                <option value="one_liter">ریگیولر 500 ml Afuma water </option>
+                <option value="one_point_five"> پریمیم 1500ml Afuma Water</option>
+                <option value="five_liter"> ریگیولر 1500 ml Afuma water </option>
+                <option value="nineteen_liter">(0)</option>
+            </select>
+          
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="unitRate" placeholder="فی پیٹ ریٹ" readonly style="background:#eee; flex:1;">
+                <input type="number" id="orderPacks" placeholder="کتنے پیٹ لینے" style="flex:1;" oninput="updatePrice()">
             </div>
-
-            <div class="flex items-center justify-between border-t border-gray-200 pt-4 bg-transparent">
-                <button id="note-view-delete-btn" class="bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-trash-can"></i> Delete
-                </button>
-                <div class="flex items-center gap-2">
-                    <button id="note-view-pdf-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-file-pdf"></i> PDF 📄
-                    </button>
-                    <button id="note-view-share-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-share-nodes"></i> Share
-                    </button>
-                </div>
+            <div style="background:#e8f5e9; padding:12px; border-radius:12px; margin:12px 0; border:1px solid #00695c; text-align:center;">
+                <strong style="font-size:22px; color:#00695c;">Rs <span id="totalBill">0</span> :کل رقم</strong>
             </div>
+            <button class="btn-action btn-green" onclick="placeOrder()">✅ آرڈر بک انتظار کریں ✅</button>
+            <div id="historyContainer" style="margin-top:15px;"></div>
         </div>
     </div>
+</div>
 
-    <script>
-        const firebaseConfig = {
-          apiKey: "AIzaSyACDb4rFTz7LraQOeehsrbuCjLWnmm12yI",
-          authDomain: "afumaphoto.firebaseapp.com",
-          databaseURL: "https://afumaphoto-default-rtdb.firebaseio.com",
-          projectId: "afumaphoto"
-        };
-        const IMGBB_API_KEY = "66dcdf21e30733bfd85545d9fb5e76c4"; 
+<div id="receiptModal" class="modal">
+    <div class="receipt-card">
+        <!-- واپسی جی بھائی کھاتا بٹن اور آیت کریمہ -->
+        <button onclick="window.history.back()" class="btn-back-full" style="margin-top:2px;">
+          <svg width="18" height="16" viewBox="0 0 24 24" fill="#ffffff">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+          <span data-i18n="backCashbook" style="font-size:13px;">واپسی کیش بک (جی بھائی کھاتا) 🏠</span>
+        </button>
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const auth = firebase.auth();
+        <div class="quran-strip" style="font-size:14px; padding:4px 8px; margin-bottom:6px;">
+          <span class="quran-text">وَاللَّهُ خَيْرُ الرَّازِقِينَ</span>
+        </div>
 
-        let currentUserPhone = null;
-        let selectedAssets = {}, activeDataSnapshot = {}, currentActiveTab = "photos"; 
-        let selectedColorClass = "bg-white"; 
-        
-        let currentFolderScope = "root"; 
-        let userFoldersData = {};
+        <div id="receiptContent"></div>
+        <p style="margin:8px 0 2px; font-size:13px; color:red; font-weight:bold;">اپنا انعام اور بیل رسید دیکھنے کے لیے نیچے لینک پر کلک کریں⬇️</p>
+        <a href="https://afumawater.blogspot.com" target="_blank" class="web-link-btn">🌐 afumawater.blogspot.com</a>
+        <button onclick="closeModal()" style="background:#d32f2f; color:white; border:none; width:100%; padding:8px; margin-top:8px; border-radius:5px; font-weight:bold;">بند کریں</button>
+    </div>
+</div>
 
-        window.addEventListener('popstate', function (event) {
-            if (document.getElementById('folder-select-modal').classList.contains('active')) {
-                event.preventDefault(); closeFolderSelectModal(); return;
-            }
-            if (document.getElementById('note-view-modal').classList.contains('active')) {
-                event.preventDefault(); closeNoteViewModal(); return;
-            }
-            if (document.getElementById('preview-modal').classList.contains('active')) {
-                event.preventDefault(); closePreviewModal(); return;
-            }
-            if (currentFolderScope !== "root") {
-                event.preventDefault();
-                navigateToFolder("root");
-                return;
-            }
+<script>
+    if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('sw.js'); }); }
+
+    const firebaseConfig = { apiKey: "AIzaSyCmR_7XUOOGowcDJpdaNrXjhLIo3YiwVlM", authDomain: "photo-asghar.firebaseapp.com", projectId: "photo-asghar", storageBucket: "photo-asghar.firebasestorage.app", messagingSenderId: "888895627902", appId: "1:888895627902:web:b436aab80f0024b6fd6e2f" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let user = JSON.parse(localStorage.getItem("afuma_user"));
+    let packRates = {}; 
+    let userLoc = "";
+    const packInfo = { "half_liter": 12, "one_point_five": 6, "nineteen_liter": 1 };
+    
+    let musicStarted = false;
+
+    function playMusic() {
+        if (!musicStarted) {
+            musicStarted = true;
+            document.getElementById('musicContainer').innerHTML = `<iframe src="https://www.youtube.com/embed/wosQoGcgrew?autoplay=1&loop=1" allow="autoplay"></iframe>`;
+            setTimeout(() => { document.getElementById('musicContainer').innerHTML = ""; }, 90000); 
+        }
+    }
+
+    function autoGetLocation() {
+        const helpModal = document.getElementById('permHelpModal');
+        const options = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => { userLoc = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`; },
+                (err) => { if(err.code === 1) helpModal.style.display = "block"; },
+                options
+            );
+        }
+    }
+
+    window.onload = () => { 
+        fetchRates(); 
+        loadLcdImages(); 
+        autoGetLocation();
+        if(user) { showOrderSec(); } 
+        setInterval(updateTime, 1000); 
+    };
+
+    function loadLcdImages() {
+        db.collection("prizes").get().then(snap => {
+            const loginLcd = document.getElementById('loginLcd');
+            let imagesHtml = "";
+            snap.forEach((doc, index) => { let p = doc.data(); imagesHtml += `<img src="${p.image}" class="${index === 0 ? 'active' : ''}">`; });
+            if(loginLcd) loginLcd.innerHTML = imagesHtml;
+            if(snap.size > 1) startLcdSlider();
         });
+    }
+    function startLcdSlider() {
+        let currentIdx = 0;
+        setInterval(() => {
+            const lcds = document.querySelectorAll('.lcd-screen');
+            lcds.forEach(lcd => {
+                const imgs = lcd.querySelectorAll('img');
+                if(imgs.length > 0) { imgs[currentIdx].classList.remove('active'); currentIdx = (currentIdx + 1) % imgs.length; imgs[currentIdx].classList.add('active'); }
+            });
+        }, 1000); 
+    }
+    function fetchRates() { db.collection("settings").doc("prices").onSnapshot(doc => { if(doc.exists) { packRates = doc.data().water_pack; updatePrice(); } }); }
+    function updatePrice() {
+        let sizeKey = document.getElementById('itemSize').value;
+        let packs = document.getElementById('orderPacks').value || 0;
+        let rate = packRates[sizeKey] || 0;
+        document.getElementById('unitRate').value = rate;
+        document.getElementById('totalBill').innerText = rate * packs;
+    }
+    function updateTime() { let now = new Date(); document.getElementById('liveDate').innerText = now.toLocaleDateString('en-GB'); document.getElementById('liveTime').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
 
-        function pushModalState() { window.history.pushState({ modalOpen: true }, ""); }
+    function handleLogin() {
+        playMusic();
+        let n = document.getElementById('loginName').value;
+        let p = document.getElementById('loginPhone').value;
+        let pass = document.getElementById('loginPassword').value;
 
-        window.onload = function() {
-            const savedUser = localStorage.getItem("afuma_user_session");
-            if (savedUser) { currentUserPhone = savedUser; document.getElementById('auth-section').classList.add('hidden'); document.getElementById('app-section').classList.remove('hidden'); loadUserData(); }
+        if(!n || p.length < 11 || !pass) return alert("درست نام، موبائل نمبر اور پاسورڈ درج کریں");
+        
+        if(userLoc === "") {
+            autoGetLocation();
+            return alert("لوکیشن حاصل کی جا رہی ہے، براہ کرم ایک لمحہ انتظار کریں اور لوکیشن الاؤ کریں۔");
+        }
+
+        user = { name: n, phone: p };
+        localStorage.setItem("afuma_user", JSON.stringify(user));
+        showOrderSec();
+    }
+    function showOrderSec() {
+        document.getElementById('login-sec').classList.add('hidden');
+        document.getElementById('order-sec').classList.remove('hidden');
+        document.getElementById('liveDate').innerHTML = user.name + "<br>" + user.phone;
+        document.getElementById('logoutBtnHeader').style.display = 'block';
+        document.getElementById('defaultInfoLeft').style.display = 'none';
+        loadHistory();
+    }
+
+    function placeOrder() {
+        let select = document.getElementById('itemSize');
+        let sizeText = select.options[select.selectedIndex].text;
+        let sizeKey = select.value;
+        let packs = document.getElementById('orderPacks').value;
+        let total = document.getElementById('totalBill').innerText;
+        
+        if(!userLoc || userLoc === "" || !sizeKey || !packs || packs == 0) return alert("فارم مکمل کریں اور لوکیشن یقینی بنائیں");
+
+        let orderData = { 
+            name: user.name, 
+            phone: user.phone, 
+            size: sizeText, 
+            packs: packs, 
+            packing: packInfo[sizeKey] || 1, 
+            total_bottles: packs * (packInfo[sizeKey] || 1), 
+            rate: packRates[sizeKey], 
+            total: total, 
+            loc: userLoc, 
+            order_from: "online_app",
+            date: new Date().toLocaleDateString('en-GB'), 
+            time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), 
+            status: "Pending", 
+            ts: firebase.firestore.FieldValue.serverTimestamp() 
         };
 
-        function handleAuth() {
-            const phone = document.getElementById('auth-phone').value.trim(), password = document.getElementById('auth-password').value.trim();
-            if (!phone || !password) return alert("Please fill fields.");
-            const cleanPhone = phone.replace(/[^0-9]/g, ""), virtualEmail = `${cleanPhone}@afuma.com`;
-            auth.signInWithEmailAndPassword(virtualEmail, password).then(() => executeLoginSuccess(cleanPhone)).catch(() => {
-                auth.createUserWithEmailAndPassword(virtualEmail, password).then(() => executeLoginSuccess(cleanPhone)).catch(err => alert(err.message));
-            });
-        }
+        db.collection("orders").add(orderData).then(() => {
+            let msg = `*Online Bottle Order*%0A📅 *تاریخ:* ${orderData.date}%0A⏰ *وقت:* ${orderData.time}%0A📍 *لوکیشن:* ${orderData.loc}%0A🛒 *خریدار:* ${orderData.name}%0A📱 *نمبر:* ${orderData.phone}%0A📦 *آئٹم:* ${orderData.size}%0A💰 *ریٹ:* ${orderData.rate}%0A🔢 *کل پیٹ:* ${orderData.packs}%0A💵 *کل رقم:* Rs ${orderData.total}`;
+            window.location.href = `https://wa.me/923258833319?text=${msg}`;
+            document.getElementById('itemSize').selectedIndex = 0;
+            document.getElementById('orderPacks').value = "";
+            document.getElementById('unitRate').value = "";
+            document.getElementById('totalBill').innerText = "0";
+            loadHistory();
+        }).catch(e => alert("Error: "+e.message));
+    }
 
-        function executeLoginSuccess(phone) { currentUserPhone = phone; localStorage.setItem("afuma_user_session", phone); document.getElementById('auth-section').classList.add('hidden'); document.getElementById('app-section').classList.remove('hidden'); loadUserData(); }
-        function logout() { auth.signOut(); localStorage.removeItem("afuma_user_session"); window.location.reload(); }
-
-        function switchTab(tabId) {
-            currentActiveTab = tabId;
-            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            document.getElementById('section-photos').classList.toggle('hidden', tabId !== 'photos');
-            document.getElementById('photo-actions').classList.toggle('hidden', tabId !== 'photos');
-            document.getElementById('section-notes').classList.toggle('hidden', tabId !== 'notes');
-            clearSelection();
-        }
-
-        function selectNoteColor(colorClass, element) {
-            selectedColorClass = colorClass;
-            document.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('active', 'border-blue-900'));
-            element.classList.add('active');
-        }
-
-        function createNewFolderPrompt() {
-            const name = prompt("Enter new folder name:");
-            if (!name || name.trim() === "") return;
-            database.ref(`users_vault/${currentUserPhone}/folders`).push({
-                name: name.trim(),
-                timestamp: Date.now()
-            });
-        }
-
-        function navigateToFolder(scope) {
-            currentFolderScope = scope;
-            const titleEl = document.getElementById('current-folder-title');
-            if (scope === "root") {
-                titleEl.innerHTML = `<i class="fa-solid fa-folder-open text-amber-500 mr-1"></i> Main Gallery`;
-                document.getElementById('folders-grid').classList.remove('hidden');
-            } else {
-                const fName = userFoldersData[scope] ? userFoldersData[scope].name : "Folder";
-                titleEl.innerHTML = `<button onclick="navigateToFolder('root')" class="text-blue-600 font-bold mr-2"><i class="fa-solid fa-chevron-left"></i> Back</button> <i class="fa-solid fa-folder-open text-amber-500 mr-1"></i> ${fName}`;
-                document.getElementById('folders-grid').classList.add('hidden');
-            }
-            clearSelection();
-            renderPhotosGrid();
-        }
-
-        function openMoveToFolderModal() {
-            const listContainer = document.getElementById('modal-folders-list');
-            listContainer.innerHTML = '';
-            listContainer.innerHTML += `<button onclick="moveSelectedAssetsToFolder('root')" class="w-full text-left p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-blue-50 block"><i class="fa-solid fa-images text-blue-500 mr-1"></i> Move to Main Gallery (Root)</button>`;
-
-            Object.keys(userFoldersData).forEach(id => {
-                listContainer.innerHTML += `<button onclick="moveSelectedAssetsToFolder('${id}')" class="w-full text-left p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-amber-50 block truncate"><i class="fa-solid fa-folder text-amber-500 mr-1"></i> ${userFoldersData[id].name}</button>`;
-            });
-            document.getElementById('folder-select-modal').classList.add('active');
-            pushModalState();
-        }
-
-        function closeFolderSelectModal() { document.getElementById('folder-select-modal').classList.remove('active'); }
-
-        function moveSelectedAssetsToFolder(folderId) {
-            Object.keys(selectedAssets).forEach(key => {
-                database.ref(`users_vault/${currentUserPhone}/photos/${key}`).update({
-                    folderId: folderId
-                });
-            });
-            closeFolderSelectModal();
-            clearSelection();
-        }
-
-        function deleteFolder(folderId, name) {
-            if (confirm(`Are you sure you want to delete folder "${name}"? Inside photos will stay safe in Main Gallery.`)) {
-                Object.keys(activeDataSnapshot).forEach(key => {
-                    if (activeDataSnapshot[key].folderId === folderId) {
-                        database.ref(`users_vault/${currentUserPhone}/photos/${key}`).update({ folderId: 'root' });
-                    }
-                });
-                database.ref(`users_vault/${currentUserPhone}/folders/${folderId}`).remove();
-            }
-        }
-
-        function handleAssetClick(event, key, url, name) { if (Object.keys(selectedAssets).length > 0) { event.preventDefault(); toggleAssetSelection(key, url, name); } else { viewPreview(url, name); } }
-        function handleAssetLongPress(event, key, url, name) { event.preventDefault(); toggleAssetSelection(key, url, name); }
-
-        function toggleAssetSelection(key, url, name) {
-            const card = document.getElementById(`card-${key}`), checkbox = document.getElementById(`check-${key}`);
-            if (selectedAssets[key]) {
-                delete selectedAssets[key]; card.className = card.className.replace(/border-blue-600|bg-blue-50\/50/g, '').trim(); checkbox.classList.add('hidden');
-            } else {
-                selectedAssets[key] = { url: url, name: name }; card.classList.add('border-blue-600', 'bg-blue-50/50'); checkbox.classList.remove('hidden');
-            }
-            renderSelectionBar();
-        }
-
-        function renderSelectionBar() { const count = Object.keys(selectedAssets).length; document.getElementById('selection-bar').classList.toggle('hidden', count === 0); document.getElementById('selection-count').innerText = `${count} Selected`; }
-        function clearSelection() { Object.keys(selectedAssets).forEach(key => { const card = document.getElementById(`card-${key}`), checkbox = document.getElementById(`check-${key}`); if (card) card.className = card.className.replace(/border-blue-600|bg-blue-50\/50/g, '').trim(); if (checkbox) checkbox.classList.add('hidden'); }); selectedAssets = {}; renderSelectionBar(); }
-        function selectAllAssets() { Object.keys(activeDataSnapshot).forEach(key => { let item = activeDataSnapshot[key]; let itemScope = item.folderId || "root"; if (itemScope === currentFolderScope && !selectedAssets[key]) toggleAssetSelection(key, item.url, item.name || "Photo"); }); }
-        function deleteSelectedAssets() { if (confirm("Delete selected photo(s)?")) { Object.keys(selectedAssets).forEach(key => database.ref(`users_vault/${currentUserPhone}/photos/${key}`).remove()); clearSelection(); } }
-
-        async function shareSelectedAssets() {
-            const keys = Object.keys(selectedAssets); if (keys.length === 0) return;
-            let target = selectedAssets[keys[0]];
-            document.getElementById('upload-progress-container').classList.remove('hidden');
-            try {
-                let response = await fetch(target.url);
-                let blob = await response.blob();
-                let file = new File([blob], target.name || `AFUMA_Image.jpg`, { type: blob.type || "image/jpeg" });
-                document.getElementById('upload-progress-container').classList.add('hidden');
-
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'Share Image' });
-                    clearSelection(); return;
-                }
-            } catch (e) {}
-            document.getElementById('upload-progress-container').classList.add('hidden');
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(target.url)}`, '_blank');
-            clearSelection();
-        }
-
-        async function downloadPhoto(url, filename) {
-            try {
-                const response = await fetch(url);
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none'; a.href = blobUrl; a.download = filename || `AFUMA_${Date.now()}.jpg`;
-                document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(blobUrl);
-            } catch (e) { window.open(url, '_blank'); }
-        }
-
-        function getFormattedDateTime() {
-            const now = new Date();
-            let hours = now.getHours(); const minutes = now.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM'; hours = hours % 12; hours = hours ? hours : 12; 
-            return `${hours}:${minutes} ${ampm} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
-        }
-
-        async function uploadDispatcher(fileList) {
-            if (!fileList || fileList.length === 0 || !currentUserPhone) return;
-            const container = document.getElementById('upload-progress-container'), bar = document.getElementById('upload-progress-bar'), text = document.getElementById('upload-status-text');
-            container.classList.remove('hidden'); text.classList.remove('hidden');
-
-            for (let i = 0; i < fileList.length; i++) {
-                let file = fileList[i];
-                text.innerText = `Uploading ${file.name}...`;
-                let formData = new FormData(); formData.append("image", file);
-
-                try {
-                    let res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData }).then(r => r.json());
-                    if (res && res.success) {
-                        database.ref(`users_vault/${currentUserPhone}/photos`).push({
-                            name: file.name,
-                            url: res.data.url,
-                            folderId: currentFolderScope, 
-                            formattedDate: getFormattedDateTime(),
-                            timestamp: Date.now()
-                        });
-                    }
-                } catch (e) { alert(`${file.name} upload failed.`); }
-                bar.style.width = `${Math.round(((i + 1) / fileList.length) * 100)}%`;
-            }
-            setTimeout(() => { container.classList.add('hidden'); text.classList.add('hidden'); bar.style.width = "0%"; }, 800);
-        }
-
-        function renderPhotosGrid() {
-            const grid = document.getElementById('grid-assets'); if (!grid) return; grid.innerHTML = '';
-            let counter = 0;
-            
-            Object.keys(activeDataSnapshot).forEach(key => {
-                const data = activeDataSnapshot[key];
-                const itemScope = data.folderId || "root";
+    function loadHistory() {
+        db.collection("orders")
+          .where("phone", "==", user.phone)
+          .where("order_from", "==", "online_app")
+          .onSnapshot(snap => {
+            let html = "";
+            let docs = snap.docs.sort((a,b) => (b.data().ts?.seconds || 0) - (a.data().ts?.seconds || 0));
+            docs.forEach(doc => {
+                let d = doc.data();
+                let statusClass = d.status === "Received" ? "status-btn-received" : "status-btn-pending";
+                let statusText = d.status === "Received" ? "✅ آرڈر وصول ہو گیا" : "⏳ انتظار کریں، آرڈر جلد آپ تک پہنچ رہا ہے";
                 
-                if (itemScope === currentFolderScope) {
-                    counter++;
-                    const footer = `<div class="absolute bottom-0 left-0 right-0 bg-black/75 text-white text-[8px] px-1.5 py-1 flex flex-col z-10"><span class="truncate font-semibold">${data.name || 'Photo'}</span><span class="text-gray-300 scale-[0.9] origin-left pt-0.5"><i class="fa-regular fa-clock mr-0.5"></i>${data.formattedDate || ''}</span></div>`;
-                    const check = `<span id="check-${key}" class="hidden absolute top-2 left-2 bg-blue-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center z-20"><i class="fa-solid fa-check"></i></span>`;
-                    grid.innerHTML += `<div id="card-${key}" class="asset-card relative aspect-square rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-gray-50" onclick="handleAssetClick(event, '${key}', '${data.url}', '${data.name}')" oncontextmenu="handleAssetLongPress(event, '${key}', '${data.url}', '${data.name}')">${check}<img src="${data.url}" class="w-full h-full object-cover bg-black">${footer}</div>`;
-                }
+                html += `
+                <div style="margin:8px 0;">
+                    <button class="${statusClass}">${statusText}</button>
+                    <div style="background:#eee; padding:8px; border-radius:0 0 8px 8px; display:flex; justify-content:space-between; cursor:pointer; border:1px solid #ccc; border-top:none;" onclick='showReceipt(${JSON.stringify(d)})'>
+                        <span>${d.size}</span>
+                        <span>Rs. ${d.total} ❯</span>
+                    </div>
+                </div>`;
             });
-            if(counter === 0) { grid.innerHTML = `<div class="col-span-full text-center text-gray-400 py-12 text-xs">No photos in this scope.</div>`; }
-        }
+            document.getElementById('historyContainer').innerHTML = html || "کوئی آرڈر نہیں ملا";
+        });
+    }
 
-        function loadUserData() {
-            if (!currentUserPhone) return;
-            
-            database.ref(`users_vault/${currentUserPhone}/folders`).on('value', snapshot => {
-                userFoldersData = snapshot.exists() ? snapshot.val() : {};
-                const fGrid = document.getElementById('folders-grid'); if(!fGrid) return; fGrid.innerHTML = '';
-                
-                Object.keys(userFoldersData).forEach(id => {
-                    const f = userFoldersData[id];
-                    fGrid.innerHTML += `<div onclick="navigateToFolder('${id}')" class="bg-white border border-gray-200 p-3 rounded-2xl flex items-center justify-between gap-2 shadow-sm cursor-pointer active:scale-95 transition">
-                        <div class="flex items-center gap-2 truncate flex-1">
-                            <i class="fa-solid fa-folder text-amber-500 text-lg shrink-0"></i>
-                            <span class="text-xs font-bold text-gray-700 truncate">${f.name}</span>
-                        </div>
-                        <button onclick="event.stopPropagation(); deleteFolder('${id}', '${f.name}')" class="text-gray-300 hover:text-red-500 text-xs p-1"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>`;
-                });
-            });
-            
-            database.ref(`users_vault/${currentUserPhone}/photos`).on('value', snapshot => {
-                activeDataSnapshot = snapshot.exists() ? snapshot.val() : {};
-                renderPhotosGrid();
-            });
+    function showReceipt(d) {
+        let html = `
+            <img src="https://i.ibb.co/xtxD8VRD/9778.jpg" class="round-icon-top" onclick="window.open('https://afumawater.blogspot.com')">
+            <h4 style="color:#2e7d32; margin:0;">AFUMA MINERAL WATER</h4>
+            <p style="margin:2px 0; font-size:12px;">Asghar Ali - 03258833319</p>
+            <div style="border-top:1px solid #ccc; border-bottom:1px solid #ccc; padding:3px; margin:5px 0; font-weight:bold; color:purple; font-size:13px;">ONLINE ORDER</div>
+            <table class="rec-table">
+                <tr><td>تاریخ:</td><td class="rec-val">${d.date}</td></tr>
+                <tr><td>وقت:</td><td class="rec-val">${d.time}</td></tr>
+                <tr><td>خریدار:</td><td class="rec-val">${d.name}</td></tr>
+                <tr><td>آئٹم:</td><td class="rec-val">${d.size}</td></tr>
+                <tr><td>ریٹ:</td><td class="rec-val">${d.rate}</td></tr>
+                <tr><td>کل پیٹ:</td><td class="rec-val">${d.packs}</td></tr>
+                <tr style="border-top:2px solid #2e7d32;"><td style="font-size:15px; color:purple;">ٹوٹل رقم:</td><td class="rec-val" style="font-size:17px; color:green;">Rs ${d.total}</td></tr>
+            </table>
+        `;
+        document.getElementById('receiptContent').innerHTML = html;
+        document.getElementById('receiptModal').style.display = 'block';
+    }
 
-            database.ref(`users_vault/${currentUserPhone}/notes`).on('value', snapshot => {
-                const list = document.getElementById('notes-list'); if (!list) return; list.innerHTML = '';
-                if (!snapshot.exists()) { list.innerHTML = `<div class="text-center text-gray-400 py-6 text-sm">No secured notes yet.</div>`; return; }
-                
-                snapshot.forEach(child => {
-                    const data = child.val(), key = child.key;
-                    list.innerHTML += `<div class="${data.colorClass || 'bg-white'} p-4 rounded-2xl shadow-sm border border-gray-200 flex justify-between items-center gap-4 active:scale-[0.99] transition cursor-pointer" onclick="openFullNotePage('${key}', ${JSON.stringify(data).replace(/"/g, '&quot;')})">
-                        <div class="space-y-1 truncate flex-1">
-                            <h3 class="font-bold text-gray-800 text-sm truncate">${data.title}</h3>
-                            <p class="text-xs text-gray-500 truncate">${data.body}</p>
-                            <span class="text-[9px] text-gray-400 block">${data.formattedDate || ''}</span>
-                        </div>
-                        <button onclick="event.stopPropagation(); deleteNote('${key}')" class="text-gray-300 hover:text-red-500 text-sm p-2 transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>`;
-                });
-            });
-        }
-
-        function saveNote() {
-            const title = document.getElementById('note-title').value.trim(), body = document.getElementById('note-body').value.trim();
-            if (!title || !body) return alert("Please enter title and content.");
-            database.ref(`users_vault/${currentUserPhone}/notes`).push({
-                title: title, body: body, colorClass: selectedColorClass, formattedDate: getFormattedDateTime(), timestamp: Date.now()
-            }).then(() => {
-                document.getElementById('note-title').value = ""; document.getElementById('note-body').value = "";
-                selectNoteColor('bg-white', document.querySelector('.color-dot'));
-            });
-        }
-        function deleteNote(noteKey) { if (confirm("Delete this note?")) database.ref(`users_vault/${currentUserPhone}/notes/${noteKey}`).remove(); }
-
-        function viewPreview(url, name) {
-            document.getElementById('preview-box').innerHTML = `<img src="${url}" class="w-full h-full object-contain bg-black">`;
-            document.getElementById('preview-actions').innerHTML = `
-                <button onclick="downloadPhoto('${url}', '${name}')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-1.5"><i class="fa-solid fa-cloud-arrow-down"></i> Save to Gallery</button>
-                <button onclick="shareSinglePreview('${url}', '${name}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-1.5"><i class="fa-solid fa-share-nodes"></i> Share Photo</button>
-            `;
-            document.getElementById('preview-modal').classList.add('active'); pushModalState();
-        }
-
-        async function shareSinglePreview(url, name) {
-            document.getElementById('upload-progress-container').classList.remove('hidden');
-            try {
-                let response = await fetch(url); let blob = await response.blob();
-                let file = new File([blob], name || `AFUMA_Image.jpg`, { type: blob.type || "image/jpeg" });
-                document.getElementById('upload-progress-container').classList.add('hidden');
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'Share Image' }); return;
-                }
-            } catch(e) {}
-            document.getElementById('upload-progress-container').classList.add('hidden');
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(url)}`, '_blank');
-        }
-
-        function closePreviewModal() { document.getElementById('preview-modal').classList.remove('active'); }
-
-        function openFullNotePage(key, data) {
-            const modal = document.getElementById('note-view-modal'); const card = document.getElementById('note-view-card');
-            card.className = "w-full max-w-lg rounded-3xl shadow-2xl p-6 flex flex-col justify-between max-h-[85vh] relative transition-all";
-            card.classList.add(data.colorClass || "bg-white");
-
-            document.getElementById('note-view-title').innerText = data.title;
-            document.getElementById('note-view-body').innerText = data.body;
-            document.getElementById('note-view-date').innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Saved on: ${data.formattedDate || ''}`;
-
-            document.getElementById('note-view-delete-btn').onclick = function() {
-                if (confirm("Delete this note permanently?")) { database.ref(`users_vault/${currentUserPhone}/notes/${key}`).remove(); closeNoteViewModal(); }
-            };
-            document.getElementById('note-view-share-btn').onclick = function() {
-                let shareText = `📝 *${data.title}*\n\n${data.body}`;
-                if (navigator.share) { navigator.share({ title: data.title, text: shareText }); } 
-                else { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank'); }
-            };
-            document.getElementById('note-view-pdf-btn').onclick = function() {
-                const element = document.getElementById('note-print-area');
-                const opt = { margin: 0.5, filename: `${data.title.replace(/\s+/g, '_')}_Document.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
-                html2pdf().set(opt).from(element).save();
-            };
-            modal.classList.add('active'); pushModalState();
-        }
-
-        function closeNoteViewModal() { document.getElementById('note-view-modal').classList.remove('active'); }
-    </script>
+    function closeModal() { document.getElementById('receiptModal').style.display = 'none'; }
+    function logout() { localStorage.clear(); location.reload(); }
+</script>
 </body>
 </html>
