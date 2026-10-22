@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -267,6 +267,12 @@ jobs:
           cp afuma_key.jks keys_output/
           cp afuma_cert.pem keys_output/
 
+      - name: Build Release AAB (Play Console)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease
+
       - name: Sign Release AAB File
         run: |
           jarsigner -keystore afuma_key.jks -storepass afumapass123 -keypass afumapass123 android/app/build/outputs/bundle/release/app-release.aab afuma
@@ -274,7 +280,6 @@ jobs:
       - name: Build Debug APK
         run: |
           cd android
-          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Upload Signed AAB Artifact (For Play Console)
